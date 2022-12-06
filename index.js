@@ -12,23 +12,6 @@ const bot = new Telegraf(TOKEN);
 app.use(express.json());
 app.use(cors());
 
-const getInvoice = (id) => {
-  const invoice = {
-    chat_id: id,
-    provider_token: PROVIDER_TOKEN,
-    start_parameter: 'get_access',
-    title: 'InvoiceTitle',
-    description: 'InvoiceDescription',
-    currency: 'RUB',
-    prices: [{ label: 'Invoice Title', amount: 100 * 100 }],
-    payload: {
-      unique_id: `${id}_${Number(new Date())}`,
-      provider_token: PROVIDER_TOKEN
-    }
-  }
-  return invoice;
-}
-
 bot.hears('/start', (ctx) => {
   return ctx.telegram.sendMessage(ctx.message.chat.id, `Привет ${ctx.from.first_name}, заходи в наш интернет магазин`, {
     reply_markup: {
@@ -47,17 +30,27 @@ bot.on('successful_payment', async (ctx, next) => {
   await ctx.reply(ctx.update.message.successful_payment)
 })
 
-app.post('/web-data', async (res) => {
+app.post('/web-data', async (req, res) => {
+  let data = {
+    provider_token: PROVIDER_TOKEN,
+    start_parameter: 'get_access',
+    title: 'InvoiceTitle',
+    description: 'InvoiceDescription',
+    currency: 'RUB',
+    prices: [{ label: 'Invoice Title', amount: 100 * 100 }],
+    payload: {
+      unique_id: Number(new Date()),
+      provider_token: PROVIDER_TOKEN
+    }
+  }
+  let result = null;
+  await axios.post(`https://api.telegram.org/bot5628922941:AAHibZzGLVFpG5ezw185_y-6h9gwLRePjf8/createInvoiceLink`, data).then(res => {
+    result = res.data.result;
+  });
   try {
-      let result;
-      axios.post(`https://api.telegram.org/bot5628922941:AAHibZzGLVFpG5ezw185_y-6h9gwLRePjf8/createInvoiceLink`, getInvoice(ctx.message.chat.id)).then(res => {
-        result = res.data.result;
-      })
-      return res.status(200).json(result);
+    return res.json({success: result});
   } catch (e) {
-      return res.status(500).json({
-        error: 'Ошибка'
-      })
+      return res.status(500).json({})
   }
 })
 
