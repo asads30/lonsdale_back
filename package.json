@@ -1,4 +1,6 @@
 {
+  "name": "lonsdale_back",
+  "homepage": "https://asads30.github.io/lonsdale_back",
   "dependencies": {
     "axios": "^1.2.1",
     "cors": "^2.8.5",
@@ -9,5 +11,8 @@
   },
   "scripts": {
     "start": "nodemon index"
+  },
+  "devDependencies": {
+    "gh-pages": "^4.0.0"
   }
 }
